@@ -3,6 +3,7 @@ import { Howl } from "howler";
 import Sidebar from "./components/Sidebar";
 import MusicContent from "./components/MusicContent";
 import SongCard from "./components/SongCard";
+import { FaBars, FaMusic, FaPlay, FaPause } from "react-icons/fa";
 
 const MusicPlayerInterface = () => {
   const [songs, setSongs] = useState([]);
@@ -15,6 +16,8 @@ const MusicPlayerInterface = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
   const [isShuffleMode, setIsShuffleMode] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isMobilePlayerExpanded, setIsMobilePlayerExpanded] = useState(false);
 
   const progressIntervalRef = useRef(null);
 
@@ -177,36 +180,129 @@ const MusicPlayerInterface = () => {
   };
 
   return (
-    <div className="flex h-screen text-white">
-      <Sidebar />
+    <div className="flex flex-col md:flex-row h-screen text-white relative">
+      {/* Mobile Header */}
+      <div className="md:hidden absolute top-0 left-0 right-0 z-50 bg-black p-4 flex justify-between items-center">
+        <button onClick={() => setIsMobileSidebarOpen(true)}>
+          <FaBars className="text-white" />
+        </button>
+        <div className="flex items-center">
+          <FaMusic className="text-red-500 mr-2" />
+          <h1 className="text-xl font-bold">DreamMusic</h1>
+        </div>
+      </div>
 
-      <MusicContent
-        songs={songs}
-        songImages={songImages}
-        currentSongIndex={currentSongIndex}
-        isPlaying={isPlaying}
-        onSongSelect={handleSongSelect}
-        formatTime={formatTime}
-        audioPlayer={audioPlayer}
-        isLoading={isLoading}
-      />
-
-      {songs.length > 0 && (
-        <SongCard
-          currentSong={songs[currentSongIndex]}
-          songImage={songImages[currentSongIndex]}
-          isPlaying={isPlaying}
-          audioPlayer={audioPlayer}
-          onPlayPause={handlePlayPause}
-          onPrevSong={handlePrevSong}
-          onNextSong={handleNextSong}
-          formatTime={formatTime}
-          isRepeat={isRepeat}
-          isShuffleMode={isShuffleMode}
-          onToggleRepeat={toggleRepeat}
-          onToggleShuffle={toggleShuffle}
-        />
+      {/* Mobile Sidebar Overlay */}
+      {isMobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <Sidebar />
+          <button
+            className="absolute top-4 right-4 text-white"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          >
+            Close
+          </button>
+        </div>
       )}
+
+      {/* Sidebar for Desktop */}
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <MusicContent
+          songs={songs}
+          songImages={songImages}
+          currentSongIndex={currentSongIndex}
+          isPlaying={isPlaying}
+          onSongSelect={handleSongSelect}
+          formatTime={formatTime}
+          audioPlayer={audioPlayer}
+          isLoading={isLoading}
+        />
+      </div>
+
+      {/* Mobile Player Controls */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-md z-50">
+        <div
+          className="flex items-center p-4 cursor-pointer"
+          onClick={() => setIsMobilePlayerExpanded(!isMobilePlayerExpanded)}
+        >
+          <img
+            src={
+              songImages[currentSongIndex] || songs[currentSongIndex]?.picture
+            }
+            alt={songs[currentSongIndex]?.title}
+            className="w-12 h-12 rounded-lg mr-4"
+          />
+          <div className="flex-1">
+            <h3 className="text-sm font-bold truncate">
+              {songs[currentSongIndex]?.title}
+            </h3>
+            <p className="text-xs text-gray-400 truncate">
+              {songs[currentSongIndex]?.artist}
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button onClick={handlePlayPause}>
+              {isPlaying ? (
+                <FaPause className="text-white" />
+              ) : (
+                <FaPlay className="text-white" />
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Player Expanded */}
+      {isMobilePlayerExpanded && (
+        <div className="fixed inset-0 z-50 bg-black">
+          <SongCard
+            currentSong={songs[currentSongIndex]}
+            songImage={songImages[currentSongIndex]}
+            isPlaying={isPlaying}
+            audioPlayer={audioPlayer}
+            onPlayPause={handlePlayPause}
+            onPrevSong={handlePrevSong}
+            onNextSong={handleNextSong}
+            formatTime={formatTime}
+            isRepeat={isRepeat}
+            isShuffleMode={isShuffleMode}
+            onToggleRepeat={toggleRepeat}
+            onToggleShuffle={toggleShuffle}
+            isMobile={true}
+          />
+          <button
+            className="absolute top-4 right-4 text-white"
+            onClick={() => setIsMobilePlayerExpanded(false)}
+          >
+            Close
+          </button>
+        </div>
+      )}
+
+      {/* Desktop Player */}
+      <div className="hidden md:block">
+        {songs.length > 0 && (
+          <SongCard
+            currentSong={songs[currentSongIndex]}
+            songImage={songImages[currentSongIndex]}
+            isPlaying={isPlaying}
+            audioPlayer={audioPlayer}
+            onPlayPause={handlePlayPause}
+            onPrevSong={handlePrevSong}
+            onNextSong={handleNextSong}
+            formatTime={formatTime}
+            isRepeat={isRepeat}
+            isShuffleMode={isShuffleMode}
+            onToggleRepeat={toggleRepeat}
+            onToggleShuffle={toggleShuffle}
+          />
+        )}
+      </div>
     </div>
   );
 };
